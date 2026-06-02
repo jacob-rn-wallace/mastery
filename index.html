@@ -914,10 +914,28 @@ function updateScoreChip() {
 }
 
 function pickQuestion(topic) {
-  // Weight toward problems the user has seen less, with slight random shuffle
+  const course = state.activeCourse;
+  const ts = getTopicState(course.id, topic.id, course);
   const problems = topic.problems;
-  const idx = Math.floor(Math.random() * problems.length);
-  return problems[idx];
+
+  const weights = problems.map(p => {
+    const d = p.difficulty;
+    if (course.scoringMode === 'continuous') {
+      return (4 - d) + (1 - ts.score / 100) * d * 3;
+    } else {
+      const threshold = course.masteryThreshold || 1;
+      const progress = Math.min(ts.streak, threshold) / threshold;
+      return (4 - d) + (1 - progress) * d * 3;
+    }
+  });
+
+  const total = weights.reduce((sum, w) => sum + w, 0);
+  let r = Math.random() * total;
+  for (let i = 0; i < problems.length; i++) {
+    r -= weights[i];
+    if (r <= 0) return problems[i];
+  }
+  return problems[problems.length - 1];
 }
 
 function resolveParams(problem) {
