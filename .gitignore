@@ -1,1 +1,6 @@
+# User-specific content — not tracked by git
+user/
+
+# Common system files
 .DS_Store
+Thumbs.db
