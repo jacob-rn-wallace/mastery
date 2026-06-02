@@ -155,6 +155,25 @@ Append a new object to the `COURSES` array in the **PROBLEM BANK** section of `i
 
 In **continuous** mode, `masteryThreshold` is not used. In **streak** mode, omitting it defaults to... well, define it — it's required for streak mode to function correctly.
 
+### Optional: prerequisites field
+
+Any topic can declare an array of topic IDs that must be sufficiently completed before the topic unlocks:
+
+```js
+{
+  id: "dynamics",
+  name: "Dynamics",
+  prerequisites: ["kinematics"],   // topic IDs from the same course
+  problems: [ ... ]
+}
+```
+
+Unlock thresholds by scoring mode:
+- **Continuous** — the prerequisite topic's score must be ≥ 60.
+- **Streak** — the prerequisite topic must be marked mastered.
+
+A topic with no progress entry is always treated as locked. Every course should have at least one topic with no prerequisites so there is always a free entry point.
+
 ---
 
 ## Scoring reference

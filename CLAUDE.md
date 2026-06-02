@@ -77,11 +77,12 @@ The file exports `COURSES` (array). It also does `module.exports = { COURSES }` 
 
 ### Topic object
 
-| Field | Type | Required |
-|-------|------|----------|
-| `id` | string | yes — unique within the course |
-| `name` | string | yes |
-| `problems` | Problem[] | yes |
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| `id` | string | yes — unique within the course | |
+| `name` | string | yes | |
+| `prerequisites` | string[] | no | Array of topic IDs from the same course. A topic is unlocked when all prerequisites pass their threshold: continuous mode requires score ≥ 60; streak mode requires `mastered === true`. A topic with no progress entry is treated as locked. Omit or use `[]` for no prerequisites. Every course must have at least one prerequisite-free topic as its entry point. |
+| `problems` | Problem[] | yes | |
 
 ### Problem object
 
