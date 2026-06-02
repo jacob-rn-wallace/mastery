@@ -38,26 +38,74 @@ There is no `package.json`, no `node_modules`, no `dist/`, no transpilation.
 
 ```js
 state = {
-  activeCourse: null,   // full course object from COURSES
-  activeTopic:  null,   // full topic object
-  currentQ:     null,   // resolved question (with _resolvedParams, _computedAnswer, etc.)
-  answered:     false,
-  progress: {}          // { courseId: { topicId: { score, streak, mastered } } }
+  activeCourse:  null,   // full course object from COURSES
+  activeTopic:   null,   // full topic object
+  currentQ:      null,   // resolved question (with _resolvedParams, _computedAnswer, etc.)
+  answered:      false,
+  progress:      {},     // { courseId: { topicId: { score, streak, mastered, ...sm2 } } }
+  sessionStats:  { correct: 0, total: 0, difficultySum: 0 }
+                         // reset by openPractice(); updated by applyScore(); consumed by closePracticeSession()
 }
 ```
 
 ### Progress schema (localStorage)
 
+Stored under the key `practice_tool_v3_progress`. Each topic entry always carries both scoring fields and all SM-2 fields, regardless of whether SM-2 is enabled for the course:
+
 ```json
 {
   "mae335": {
-    "fluid-properties": { "score": 60, "streak": 0, "mastered": false },
-    "bernoulli-energy-cv": { "score": 80, "streak": 0, "mastered": true }
+    "fluid-properties": {
+      "score": 60, "streak": 0, "mastered": false,
+      "easeFactor": 2.5, "interval": 1, "repetitions": 0,
+      "nextReviewDate": "2026-06-03", "lastReviewDate": "2026-06-02"
+    },
+    "bernoulli-energy-cv": {
+      "score": 80, "streak": 0, "mastered": true,
+      "easeFactor": 2.8, "interval": 15, "repetitions": 3,
+      "nextReviewDate": "2026-06-17", "lastReviewDate": "2026-06-02"
+    }
   }
 }
 ```
 
-Both `score` and `streak` are stored for every topic regardless of the course's `scoringMode`. Only the relevant field is used at runtime.
+Both `score` and `streak` are stored for every topic regardless of `scoringMode`. SM-2 fields are stored for every topic regardless of whether `sm2.enabled` is true — they are simply ignored at runtime when SM-2 is off. `loadProgress()` migrates v2 entries (which have no SM-2 fields) by adding `SM2_DEFAULTS` to each topic entry and saving under the v3 key.
+
+### SM-2 scheduling
+
+SM-2 is an optional spaced-repetition algorithm that schedules topic reviews at growing intervals. It is self-contained in `index.html` and requires no external dependencies.
+
+**Session flow:**
+1. `openPractice()` resets `state.sessionStats` to `{ correct: 0, total: 0, difficultySum: 0 }`.
+2. Each answered question calls `applyScore()`, which updates both the topic's score/streak and `state.sessionStats`.
+3. At the top of `loadNextQuestion()`, if `state.sessionStats.total >= course.sm2.sessionSize`, `closePracticeSession()` is called instead of drawing another question.
+4. `closePracticeSession()`: computes session quality via `getSessionQuality(sessionStats)` → calls `updateSM2(topicState, quality, minEaseFactor)` if SM-2 is enabled → calls `saveProgress()` → navigates back to the topic list.
+5. The back button also calls `closePracticeSession()`, so SM-2 fields are updated even if the user exits early.
+
+**Gating functions — both must return `true` for a topic to be accessible:**
+- `isTopicUnlocked(course, topic)` — checks prerequisites. Reads `state.progress` directly (not via `getTopicState`) to avoid creating default entries that would make unseen topics appear unlocked.
+- `isTopicDue(course, topicState)` — checks SM-2 scheduling. Returns `true` if SM-2 is disabled for the course, if `nextReviewDate` is null, or if today ≥ `nextReviewDate`.
+
+Topics that fail `isTopicUnlocked` show a lock icon; topics that fail `isTopicDue` show a calendar icon with the next review date.
+
+**Review status helper:**
+`getTopicReviewStatus(course, topic, topicState)` returns one of four strings:
+- `"unscheduled"` — SM-2 disabled or topic not yet reviewed (`nextReviewDate` is null)
+- `"due"` — `nextReviewDate` equals today
+- `"overdue"` — `nextReviewDate` is before today
+- `"upcoming"` — `nextReviewDate` is after today
+
+Used by `renderTopicList()` (pill badges on accessible topic rows) and `renderHome()` (due count on course cards).
+
+**SM-2 algorithm (`updateSM2`):**
+Implements the standard SM-2 algorithm. `quality` (0–5 integer from `getSessionQuality`) drives updates:
+- `quality < 3`: reset `repetitions` to 0, set `interval` to 1
+- `repetitions === 0`: `interval = 1`
+- `repetitions === 1`: `interval = 6`
+- `repetitions >= 2`: `interval = round(interval * easeFactor)`
+- `easeFactor += 0.1 - (5 - quality) * 0.08` (clamped to `minEaseFactor`)
+
+**Date handling:** All dates are stored and compared as `YYYY-MM-DD` ISO strings. Lexicographic string comparison is valid for this format. Date objects for display are always constructed as `new Date(y, m-1, d)` (parsed from the stored string) to avoid UTC offset bugs — `new Date('YYYY-MM-DD')` parses as UTC midnight and can display the wrong local date in negative-offset timezones.
 
 ---
 
@@ -159,7 +207,7 @@ The mastery overlay (`#mastery-overlay`) is a fixed-position element layered abo
 
 **`answerFn` is evaluated with `new Function`.** This is intentional — the config is trusted developer input, not user input. Don't add sanitization that breaks legitimate function expressions. Don't use `eval()` as a replacement.
 
-**`localStorage` key is `practice_tool_v2_progress`.** If the progress schema ever changes in a breaking way, increment the version suffix and add a migration or clear path so returning users don't get corrupt state.
+**`localStorage` key is `practice_tool_v3_progress`.** If the progress schema ever changes in a breaking way, increment the version suffix and add a migration or clear path so returning users don't get corrupt state. The v2→v3 migration in `loadProgress()` is the reference example: read old key, backfill new fields with defaults, write under new key, leave old key intact.
 
 **No frameworks, no transpilation.** Keep it that way. The entire value proposition of this tool is that it runs by opening a file. Do not introduce a build step, npm dependencies, or module bundlers. ES6+ syntax is fine; anything requiring transpilation is not.
 
@@ -195,7 +243,7 @@ python3 -m http.server
 ### Reset a user's progress
 Open the browser console and run:
 ```js
-localStorage.removeItem('practice_tool_v2_progress');
+localStorage.removeItem('practice_tool_v3_progress');
 location.reload();
 ```
 Or use the "reset all progress" button in the app header.
@@ -209,3 +257,4 @@ Or use the "reset all progress" button in the app header.
 - User accounts or remote progress sync
 - Paid API dependencies (the tool must remain free to run)
 - Autogenerated problems via LLM at runtime (increases cost and reduces reliability of correct answers)
+- Replacing the SM-2 implementation with a backend scheduling service or external API — the algorithm is intentionally self-contained in `index.html` and runs entirely in the browser with no network calls

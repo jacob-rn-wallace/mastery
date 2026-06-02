@@ -35,6 +35,16 @@ Problems come in two types:
 
 Numerical problems can be **parametric**: define named parameter ranges in the config and use `{{PARAM_NAME}}` placeholders in the question text. Mastery substitutes a random integer from each range every time the question is drawn, so the same problem has different numbers each session.
 
+**Spaced repetition (SM-2)** is available as an opt-in feature configured per course. When enabled, topics are scheduled for review at increasing intervals based on your performance — well-known topics come back less frequently and topics you struggle with return sooner.
+
+How it works in practice:
+- You answer a fixed number of questions per session (configured via `sessionSize`). Once that limit is reached, the session closes automatically and the topic is scheduled for its next review.
+- The review interval starts at 1 day after the first session, grows to 6 days after the second, and then multiplies by the ease factor on each subsequent session (ease factor starts at 2.5, so the third interval is roughly 15 days, and so on).
+- Correct answers with higher difficulty increase the ease factor; wrong answers shrink it, down to a configurable floor (`minEaseFactor`, default 1.3).
+- The home screen shows a review summary per course: "N topics due for review" (highlighted) or "all caught up" (muted). Topic rows show "due today" or "overdue" pills for topics that need attention.
+
+SM-2 is opt-in: add `sm2: { enabled: true, ... }` to a course to activate it. Omitting the block entirely — or setting `enabled: false` — leaves the course's behavior completely unchanged.
+
 ---
 
 ## Usage
