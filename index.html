@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Practice Tool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="questions.js"></script>
+<style>
+  /* ── TOKENS ── */
+  :root {
+    --bg:       #0d0d0f;
+    --surface:  #16161a;
+    --surface2: #1e1e24;
+    --border:   #2a2a35;
+    --border2:  #3a3a48;
+    --text:     #e8e8f0;
+    --muted:    #7a7a90;
+    --accent:   #c8ff00;
+    --correct:  #00e676;
+    --wrong:    #ff4d4d;
+    --mono:     'Space Mono', monospace;
+    --sans:     'Syne', sans-serif;
+    --radius:   6px;
+    --transition: 180ms ease;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { font-size: 15px; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    line-height: 1.5;
+  }
+
+  /* ── LAYOUT ── */
+  #app { flex: 1; display: flex; flex-direction: column; }
+
+  /* ── HEADER ── */
+  .header {
+    border-bottom: 1px solid var(--border);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 100;
+  }
+  .logo {
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    color: var(--accent);
+    letter-spacing: -0.02em;
+    user-select: none;
+  }
+  .logo span { color: var(--muted); }
+  .header-right { display: flex; align-items: center; gap: 12px; }
+
+  /* ── SCREENS ── */
+  .screen { display: none; flex: 1; }
+  .screen.active { display: flex; flex-direction: column; flex: 1; }
+
+  /* ── HOME ── */
+  .home-inner {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+    width: 100%;
+  }
+  .home-title {
+    font-size: 2.6rem;
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.04em;
+    margin-bottom: 8px;
+  }
+  .home-title em {
+    font-style: normal;
+    color: var(--accent);
+  }
+  .home-sub {
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    margin-bottom: 40px;
+  }
+
+  /* ── COURSE CARDS ── */
+  .course-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 32px;
+  }
+  .course-card {
+    background: var(--surface);
+    padding: 20px;
+    cursor: pointer;
+    transition: background var(--transition);
+    position: relative;
+    overflow: hidden;
+  }
+  .course-card:hover { background: var(--surface2); }
+  .course-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--card-color, var(--accent));
+    opacity: 0.7;
+  }
+  .course-card-name {
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-bottom: 6px;
+    line-height: 1.3;
+  }
+  .course-card-meta {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--muted);
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  .course-card-meta .tag {
+    background: var(--bg);
+    padding: 2px 7px;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+  }
+  .course-progress-bar {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 6px;
+  }
+  .course-progress-fill {
+    height: 100%;
+    background: var(--card-color, var(--accent));
+    transition: width 0.4s ease;
+  }
+  .course-progress-label {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    color: var(--muted);
+    margin-top: 5px;
+  }
+
+  /* ── RESET BUTTON ── */
+  .btn {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    padding: 7px 14px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all var(--transition);
+  }
+  .btn:hover { border-color: var(--border2); color: var(--text); }
+  .btn.danger:hover { border-color: var(--wrong); color: var(--wrong); }
+  .btn.primary {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .btn.primary:hover {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  /* ── COURSE SCREEN ── */
+  .course-screen-inner {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 32px 24px 80px;
+    width: 100%;
+  }
+  .back-btn {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: color var(--transition);
+  }
+  .back-btn:hover { color: var(--text); }
+  .course-heading {
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin-bottom: 4px;
+  }
+  .course-heading-mode {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-bottom: 28px;
+  }
+
+  /* ── TOPIC LIST ── */
+  .topic-list { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .topic-row {
+    background: var(--surface);
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+    transition: background var(--transition);
+  }
+  .topic-row:hover { background: var(--surface2); }
+  .topic-row-left { flex: 1; }
+  .topic-row-name { font-weight: 600; font-size: 0.92rem; margin-bottom: 3px; }
+  .topic-row-meta { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); }
+  .topic-score-display {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    min-width: 56px;
+    text-align: right;
+  }
+  .topic-bar {
+    width: 80px;
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .topic-bar-fill {
+    height: 100%;
+    transition: width 0.4s ease;
+  }
+  .mastered-badge {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    padding: 2px 7px;
+    border-radius: 2px;
+    border: 1px solid var(--correct);
+    color: var(--correct);
+    flex-shrink: 0;
+  }
+
+  /* ── PRACTICE SCREEN ── */
+  .practice-inner {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 32px 24px 80px;
+    width: 100%;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .practice-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  .practice-topic-name {
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .practice-score-chip {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    padding: 5px 12px;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  /* ── QUESTION CARD ── */
+  .question-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-bottom: 20px;
+    flex: 1;
+    max-height: 600px;
+    overflow-y: auto;
+  }
+  .question-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .difficulty-pip {
+    display: flex;
+    gap: 3px;
+  }
+  .pip {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--border2);
+  }
+  .pip.filled { background: var(--accent); }
+  .question-type-tag {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    padding: 2px 7px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .question-text {
+    font-size: 1rem;
+    line-height: 1.65;
+    margin-bottom: 22px;
+    font-weight: 500;
+  }
+  .question-text code {
+    font-family: var(--mono);
+    font-size: 0.88em;
+    background: var(--bg);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: var(--accent);
+  }
+
+  /* MC choices */
+  .mc-choices { display: flex; flex-direction: column; gap: 8px; }
+  .mc-choice {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all var(--transition);
+    background: var(--bg);
+    text-align: left;
+    font-family: var(--sans);
+    font-size: 0.92rem;
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .mc-choice:hover:not(:disabled) { border-color: var(--border2); background: var(--surface2); }
+  .mc-choice .choice-letter {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--muted);
+    min-width: 18px;
+    padding-top: 1px;
+  }
+  .mc-choice.correct { border-color: var(--correct); background: rgba(0,230,118,0.06); }
+  .mc-choice.correct .choice-letter { color: var(--correct); }
+  .mc-choice.wrong { border-color: var(--wrong); background: rgba(255,77,77,0.06); }
+  .mc-choice.wrong .choice-letter { color: var(--wrong); }
+  .mc-choice.reveal-correct { border-color: var(--correct); opacity: 0.6; }
+  .mc-choice:disabled { cursor: default; }
+
+  /* Numerical input */
+  .numerical-input-area { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .num-input {
+    font-family: var(--mono);
+    font-size: 1rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    padding: 10px 14px;
+    width: 200px;
+    transition: border-color var(--transition);
+    outline: none;
+  }
+  .num-input:focus { border-color: var(--accent); }
+  .num-input.correct { border-color: var(--correct); }
+  .num-input.wrong { border-color: var(--wrong); }
+
+  /* ── FEEDBACK ── */
+  .feedback-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    margin-bottom: 16px;
+    display: none;
+  }
+  .feedback-panel.show { display: block; }
+  .feedback-result {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .feedback-result.correct { color: var(--correct); }
+  .feedback-result.wrong { color: var(--wrong); }
+  .feedback-explanation {
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .feedback-delta {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    margin-top: 8px;
+  }
+  .feedback-delta.pos { color: var(--correct); }
+  .feedback-delta.neg { color: var(--wrong); }
+
+  .next-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--accent);
+    color: var(--bg);
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    font-weight: 700;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    transition: opacity var(--transition);
+    margin-top: 4px;
+  }
+  .next-btn:hover { opacity: 0.88; }
+
+  /* ── MASTERY CELEBRATION ── */
+  .mastery-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    display: none;
+  }
+  .mastery-overlay.show { display: flex; }
+  .mastery-box {
+    background: var(--surface);
+    border: 1px solid var(--correct);
+    border-radius: var(--radius);
+    padding: 40px 48px;
+    text-align: center;
+    max-width: 400px;
+  }
+  .mastery-icon { font-size: 2.5rem; margin-bottom: 12px; }
+  .mastery-title { font-size: 1.4rem; font-weight: 800; color: var(--correct); margin-bottom: 8px; letter-spacing: -0.02em; }
+  .mastery-sub { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); margin-bottom: 24px; }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  /* ── UTILS ── */
+  .hidden { display: none !important; }
+  .muted { color: var(--muted); }
+  .mono { font-family: var(--mono); }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="logo">practice<span>://</span>tool</div>
+    <div class="header-right">
+      <button class="btn" id="btn-reset-all">reset all progress</button>
+    </div>
+  </header>
+
+  <!-- SCREEN: HOME -->
+  <div class="screen active" id="screen-home">
+    <div class="home-inner">
+      <h1 class="home-title">Master your<br>courses. <em>Problem by problem.</em></h1>
+      <p class="home-sub">// select a course to begin — progress is saved locally in your browser</p>
+      <div class="course-grid" id="course-grid"></div>
+      <p class="muted mono" style="font-size:0.7rem;line-height:1.6">
+        To add courses or problems, edit <code style="color:var(--accent)">questions.js</code> in the same folder as this file.<br>
+        Each problem takes a type (mc/numerical), difficulty (1–3), question text, and answer.
+      </p>
+    </div>
+  </div>
+
+  <!-- SCREEN: COURSE -->
+  <div class="screen" id="screen-course">
+    <div class="course-screen-inner">
+      <button class="back-btn" id="btn-back-home">← back to courses</button>
+      <h2 class="course-heading" id="course-title"></h2>
+      <p class="course-heading-mode" id="course-mode-label"></p>
+      <div class="topic-list" id="topic-list"></div>
+    </div>
+  </div>
+
+  <!-- SCREEN: PRACTICE -->
+  <div class="screen" id="screen-practice">
+    <div class="practice-inner">
+      <div class="practice-topbar">
+        <button class="back-btn" id="btn-back-course" style="margin-bottom:0">← back to topics</button>
+        <div class="practice-score-chip" id="score-chip">score: 0</div>
+      </div>
+      <p class="practice-topic-name" id="practice-topic-name"></p>
+
+      <div style="height:14px"></div>
+
+      <!-- Question card -->
+      <div class="question-card" id="question-card">
+        <div class="question-header">
+          <div class="difficulty-pip" id="diff-pips"></div>
+          <span class="question-type-tag" id="q-type-tag"></span>
+        </div>
+        <p class="question-text" id="question-text"></p>
+        <div id="mc-choices" class="mc-choices hidden"></div>
+        <div id="num-area" class="numerical-input-area hidden">
+          <input type="number" class="num-input" id="num-input" placeholder="your answer" step="any">
+          <button class="btn primary" id="btn-submit-num">submit</button>
+        </div>
+      </div>
+
+      <!-- Feedback -->
+      <div class="feedback-panel" id="feedback-panel">
+        <div class="feedback-result" id="feedback-result"></div>
+        <div class="feedback-explanation" id="feedback-explanation"></div>
+        <div class="feedback-delta" id="feedback-delta"></div>
+      </div>
+
+      <button class="next-btn hidden" id="btn-next">next question →</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- MASTERY OVERLAY -->
+<div class="mastery-overlay" id="mastery-overlay">
+  <div class="mastery-box">
+    <div class="mastery-icon">✦</div>
+    <div class="mastery-title">Topic Mastered</div>
+    <div class="mastery-sub" id="mastery-sub-text"></div>
+    <button class="btn primary" id="btn-mastery-continue">continue</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════════
+
+let state = {
+  activeCourse: null,  // course object
+  activeTopic: null,   // topic object
+  currentQ: null,      // rendered question (with resolved params)
+  answered: false,
+  progress: {}         // { courseId: { topicId: { score, streak, mastered } } }
+};
+
+const STORAGE_KEY = 'practice_tool_v2_progress';
+
+function loadProgress() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    state.progress = raw ? JSON.parse(raw) : {};
+  } catch(e) { state.progress = {}; }
+}
+
+function saveProgress() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state.progress));
+}
+
+function getTopicState(courseId, topicId, course) {
+  if (!state.progress[courseId]) state.progress[courseId] = {};
+  if (!state.progress[courseId][topicId]) {
+    state.progress[courseId][topicId] = {
+      score: 0,
+      streak: 0,
+      mastered: false
+    };
+  }
+  return state.progress[courseId][topicId];
+}
+
+// ═══════════════════════════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════════════════════════
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  HOME SCREEN
+// ═══════════════════════════════════════════════════════════
+
+function renderHome() {
+  const grid = document.getElementById('course-grid');
+  grid.innerHTML = '';
+
+  COURSES.forEach(course => {
+    const topics = course.topics;
+    const totalTopics = topics.length;
+    let masteredCount = 0;
+    let avgScore = 0;
+
+    topics.forEach(t => {
+      const ts = getTopicState(course.id, t.id, course);
+      if (course.scoringMode === 'mastery') {
+        if (ts.mastered) masteredCount++;
+      } else {
+        avgScore += ts.score;
+        if (ts.score >= 80) masteredCount++;
+      }
+    });
+
+    avgScore = totalTopics ? Math.round(avgScore / totalTopics) : 0;
+    const progressFraction = totalTopics ? masteredCount / totalTopics : 0;
+
+    const card = document.createElement('div');
+    card.className = 'course-card';
+    card.style.setProperty('--card-color', course.color);
+
+    const modeLabel = course.scoringMode === 'mastery'
+      ? `mastery mode · ${course.masteryThreshold} in a row`
+      : 'continuous scoring';
+
+    const progressLabel = course.scoringMode === 'mastery'
+      ? `${masteredCount}/${totalTopics} topics mastered`
+      : `${masteredCount}/${totalTopics} topics ≥80`;
+
+    card.innerHTML = `
+      <div class="course-card-name">${course.name}</div>
+      <div class="course-card-meta">
+        <span class="tag">${modeLabel}</span>
+        <span class="tag">${totalTopics} topics</span>
+      </div>
+      <div class="course-progress-bar">
+        <div class="course-progress-fill" style="width:${progressFraction*100}%; background:${course.color}"></div>
+      </div>
+      <div class="course-progress-label">${progressLabel}</div>
+    `;
+
+    card.addEventListener('click', () => openCourse(course));
+    grid.appendChild(card);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+//  COURSE SCREEN
+// ═══════════════════════════════════════════════════════════
+
+function openCourse(course) {
+  state.activeCourse = course;
+
+  document.getElementById('course-title').textContent = course.name;
+  document.getElementById('course-mode-label').textContent =
+    course.scoringMode === 'mastery'
+      ? `mastery mode — ${course.masteryThreshold} correct in a row to master each topic`
+      : 'continuous scoring — performance on each question updates your topic score (0–100)';
+
+  renderTopicList(course);
+  showScreen('screen-course');
+}
+
+function renderTopicList(course) {
+  const list = document.getElementById('topic-list');
+  list.innerHTML = '';
+
+  course.topics.forEach(topic => {
+    const ts = getTopicState(course.id, topic.id, course);
+    const row = document.createElement('div');
+    row.className = 'topic-row';
+
+    let rightSide = '';
+    if (course.scoringMode === 'continuous') {
+      const pct = ts.score;
+      rightSide = `
+        <span class="topic-score-display" style="color:${scoreColor(pct)}">${pct}</span>
+        <div class="topic-bar">
+          <div class="topic-bar-fill" style="width:${pct}%; background:${course.color}"></div>
+        </div>
+        ${ts.score >= 80 ? '<span class="mastered-badge">mastered</span>' : ''}
+      `;
+    } else {
+      if (ts.mastered) {
+        rightSide = '<span class="mastered-badge">mastered</span>';
+      } else {
+        rightSide = `
+          <span class="topic-score-display muted mono" style="font-size:0.7rem">${ts.streak}/${course.masteryThreshold} streak</span>
+          <div class="topic-bar">
+            <div class="topic-bar-fill" style="width:${(ts.streak/course.masteryThreshold)*100}%; background:${course.color}"></div>
+          </div>
+        `;
+      }
+    }
+
+    row.innerHTML = `
+      <div class="topic-row-left">
+        <div class="topic-row-name">${topic.name}</div>
+        <div class="topic-row-meta">${topic.problems.length} problem${topic.problems.length !== 1 ? 's' : ''}</div>
+      </div>
+      ${rightSide}
+    `;
+
+    row.addEventListener('click', () => openPractice(course, topic));
+    list.appendChild(row);
+  });
+}
+
+function scoreColor(score) {
+  if (score >= 80) return 'var(--correct)';
+  if (score >= 50) return 'var(--accent)';
+  return 'var(--muted)';
+}
+
+// ═══════════════════════════════════════════════════════════
+//  PRACTICE SCREEN
+// ═══════════════════════════════════════════════════════════
+
+function openPractice(course, topic) {
+  state.activeTopic = topic;
+  state.answered = false;
+
+  document.getElementById('practice-topic-name').textContent = topic.name;
+  updateScoreChip();
+
+  loadNextQuestion();
+  showScreen('screen-practice');
+}
+
+function updateScoreChip() {
+  const course = state.activeCourse;
+  const topic = state.activeTopic;
+  const ts = getTopicState(course.id, topic.id, course);
+  const chip = document.getElementById('score-chip');
+
+  if (course.scoringMode === 'continuous') {
+    chip.textContent = `score: ${ts.score}`;
+    chip.style.color = scoreColor(ts.score);
+  } else {
+    chip.textContent = ts.mastered ? 'mastered ✓' : `streak: ${ts.streak}/${course.masteryThreshold}`;
+    chip.style.color = ts.mastered ? 'var(--correct)' : 'var(--text)';
+  }
+}
+
+function pickQuestion(topic) {
+  // Weight toward problems the user has seen less, with slight random shuffle
+  const problems = topic.problems;
+  const idx = Math.floor(Math.random() * problems.length);
+  return problems[idx];
+}
+
+function resolveParams(problem) {
+  // Returns a copy of the problem with {{PARAM}} substituted and answer computed
+  const resolved = { ...problem };
+
+  if (!problem.params) {
+    resolved._resolvedParams = {};
+    return resolved;
+  }
+
+  const params = {};
+  let questionText = problem.question;
+
+  for (const [key, [min, max]] of Object.entries(problem.params)) {
+    const val = Math.floor(Math.random() * (max - min + 1)) + min;
+    params[key] = val;
+    questionText = questionText.replaceAll(`{{${key}}}`, val);
+  }
+
+  resolved._resolvedParams = params;
+  resolved._resolvedQuestion = questionText;
+
+  // Compute answer from answerFn
+  if (problem.answerFn) {
+    try {
+      const fn = new Function('p', `return (${problem.answerFn})(p)`);
+      resolved._computedAnswer = fn(params);
+    } catch(e) {
+      resolved._computedAnswer = null;
+      console.error('answerFn error:', e);
+    }
+  }
+
+  return resolved;
+}
+
+function shuffleChoices(choices) {
+  // choices[0] is always correct — shuffle, but track correct index
+  const correctText = choices[0];
+  const arr = [...choices];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return { shuffled: arr, correctIdx: arr.indexOf(correctText) };
+}
+
+function loadNextQuestion() {
+  const topic = state.activeTopic;
+  state.answered = false;
+
+  const raw = pickQuestion(topic);
+  const resolved = resolveParams(raw);
+  state.currentQ = { raw, resolved };
+
+  // Reset UI
+  document.getElementById('feedback-panel').classList.remove('show');
+  document.getElementById('btn-next').classList.add('hidden');
+  document.getElementById('mc-choices').classList.add('hidden');
+  document.getElementById('num-area').classList.add('hidden');
+
+  // Difficulty pips
+  const pips = document.getElementById('diff-pips');
+  pips.innerHTML = '';
+  for (let i = 1; i <= 3; i++) {
+    const p = document.createElement('div');
+    p.className = 'pip' + (i <= raw.difficulty ? ' filled' : '');
+    pips.appendChild(p);
+  }
+
+  // Type tag
+  document.getElementById('q-type-tag').textContent =
+    raw.type === 'mc' ? 'multiple choice' : 'numerical';
+
+  // Question text
+  const qText = resolved._resolvedQuestion || raw.question;
+  document.getElementById('question-text').textContent = qText;
+
+  if (raw.type === 'mc') {
+    renderMC(resolved);
+  } else {
+    renderNumerical();
+  }
+}
+
+const LETTERS = ['A', 'B', 'C', 'D', 'E'];
+
+function renderMC(resolved) {
+  const mcDiv = document.getElementById('mc-choices');
+  mcDiv.innerHTML = '';
+  mcDiv.classList.remove('hidden');
+
+  const { shuffled, correctIdx } = shuffleChoices(resolved.choices);
+  state.currentQ._shuffledChoices = shuffled;
+  state.currentQ._correctIdx = correctIdx;
+
+  shuffled.forEach((text, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'mc-choice';
+    btn.disabled = false;
+    btn.dataset.idx = i;
+    btn.innerHTML = `<span class="choice-letter">${LETTERS[i]}</span><span>${text}</span>`;
+    btn.addEventListener('click', () => handleMCAnswer(i));
+    mcDiv.appendChild(btn);
+  });
+}
+
+function renderNumerical() {
+  const area = document.getElementById('num-area');
+  area.classList.remove('hidden');
+  const inp = document.getElementById('num-input');
+  inp.value = '';
+  inp.className = 'num-input';
+  inp.disabled = false;
+  inp.focus();
+}
+
+function handleMCAnswer(chosenIdx) {
+  if (state.answered) return;
+  state.answered = true;
+
+  const correct = chosenIdx === state.currentQ._correctIdx;
+  const btns = document.querySelectorAll('.mc-choice');
+
+  btns.forEach(btn => {
+    btn.disabled = true;
+    const idx = parseInt(btn.dataset.idx);
+    if (idx === state.currentQ._correctIdx) {
+      btn.classList.add(correct ? 'correct' : 'reveal-correct');
+    }
+    if (idx === chosenIdx && !correct) {
+      btn.classList.add('wrong');
+    }
+  });
+
+  applyScore(correct, state.currentQ.raw.difficulty);
+  showFeedback(correct, state.currentQ.resolved);
+}
+
+function handleNumericalAnswer() {
+  if (state.answered) return;
+  const inp = document.getElementById('num-input');
+  const val = parseFloat(inp.value);
+  if (isNaN(val)) { inp.style.borderColor = 'var(--wrong)'; return; }
+
+  state.answered = true;
+  inp.disabled = true;
+
+  const q = state.currentQ.resolved;
+  const correctAnswer = q._computedAnswer !== undefined ? q._computedAnswer : q.answer;
+  const tol = q.tolerance || 0.01;
+  const correct = Math.abs(val - correctAnswer) <= Math.abs(correctAnswer * tol);
+
+  inp.classList.add(correct ? 'correct' : 'wrong');
+  applyScore(correct, state.currentQ.raw.difficulty);
+  showFeedback(correct, state.currentQ.resolved, correctAnswer);
+}
+
+function applyScore(correct, difficulty) {
+  const course = state.activeCourse;
+  const topic = state.activeTopic;
+  const ts = getTopicState(course.id, topic.id, course);
+
+  let delta = 0;
+  if (course.scoringMode === 'continuous') {
+    if (correct) {
+      delta = 10 * difficulty;
+      ts.score = Math.min(100, ts.score + delta);
+    } else {
+      delta = -(5 * difficulty);
+      ts.score = Math.max(0, ts.score + delta);
+    }
+    if (ts.score >= 80) ts.mastered = true;
+  } else {
+    if (correct) {
+      ts.streak++;
+      if (ts.streak >= course.masteryThreshold && !ts.mastered) {
+        ts.mastered = true;
+      }
+    } else {
+      ts.streak = 0;
+    }
+    delta = correct ? 1 : -1;
+  }
+
+  state.currentQ._delta = delta;
+  state.currentQ._correct = correct;
+  saveProgress();
+  updateScoreChip();
+}
+
+function showFeedback(correct, resolved, correctAnswer) {
+  const panel = document.getElementById('feedback-panel');
+  const result = document.getElementById('feedback-result');
+  const explanation = document.getElementById('feedback-explanation');
+  const deltaEl = document.getElementById('feedback-delta');
+
+  result.textContent = correct ? '✓ correct' : '✗ incorrect';
+  result.className = 'feedback-result ' + (correct ? 'correct' : 'wrong');
+
+  let expText = resolved.explanation || '';
+  if (!correct && resolved.type === 'numerical' && correctAnswer !== undefined) {
+    expText = `Correct answer: ${formatNumber(correctAnswer)}\n\n` + expText;
+  }
+  explanation.textContent = expText;
+
+  const course = state.activeCourse;
+  const delta = state.currentQ._delta;
+  if (course.scoringMode === 'continuous') {
+    deltaEl.textContent = (delta >= 0 ? '+' : '') + delta + ' pts';
+    deltaEl.className = 'feedback-delta ' + (delta >= 0 ? 'pos' : 'neg');
+  } else {
+    deltaEl.textContent = correct ? 'streak +1' : 'streak reset';
+    deltaEl.className = 'feedback-delta ' + (correct ? 'pos' : 'neg');
+  }
+
+  panel.classList.add('show');
+  document.getElementById('btn-next').classList.remove('hidden');
+
+  // Check for mastery celebration
+  const topic = state.activeTopic;
+  const ts = getTopicState(course.id, topic.id, course);
+  if (ts.mastered && state.currentQ._justMastered !== true) {
+    if (
+      (course.scoringMode === 'mastery' && correct && ts.streak === course.masteryThreshold) ||
+      (course.scoringMode === 'continuous' && correct && ts.score >= 80 && ts.score - delta < 80)
+    ) {
+      state.currentQ._justMastered = true;
+      setTimeout(() => showMasteryOverlay(topic.name), 400);
+    }
+  }
+}
+
+function formatNumber(n) {
+  if (Math.abs(n) < 0.001 || Math.abs(n) >= 10000) return n.toExponential(3);
+  return parseFloat(n.toPrecision(4)).toString();
+}
+
+function showMasteryOverlay(topicName) {
+  document.getElementById('mastery-sub-text').textContent =
+    `"${topicName}" — keep going to reinforce it`;
+  const overlay = document.getElementById('mastery-overlay');
+  overlay.classList.add('show');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  EVENT LISTENERS
+// ═══════════════════════════════════════════════════════════
+
+document.getElementById('btn-back-home').addEventListener('click', () => {
+  renderHome();
+  showScreen('screen-home');
+});
+
+document.getElementById('btn-back-course').addEventListener('click', () => {
+  renderTopicList(state.activeCourse);
+  showScreen('screen-course');
+});
+
+document.getElementById('btn-submit-num').addEventListener('click', handleNumericalAnswer);
+document.getElementById('num-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') handleNumericalAnswer();
+});
+
+document.getElementById('btn-next').addEventListener('click', () => {
+  const ts = getTopicState(state.activeCourse.id, state.activeTopic.id, state.activeCourse);
+  loadNextQuestion();
+});
+
+document.getElementById('btn-mastery-continue').addEventListener('click', () => {
+  document.getElementById('mastery-overlay').classList.remove('show');
+  loadNextQuestion();
+});
+
+document.getElementById('btn-reset-all').addEventListener('click', () => {
+  if (confirm('Reset all progress for all courses? This cannot be undone.')) {
+    state.progress = {};
+    saveProgress();
+    renderHome();
+    showScreen('screen-home');
+  }
+});
+
+// ═══════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════
+
+loadProgress();
+renderHome();
+</script>
+</body>
+</html>
