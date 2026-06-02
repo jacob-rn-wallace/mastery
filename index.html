@@ -593,7 +593,8 @@ let state = {
   activeTopic: null,   // topic object
   currentQ: null,      // rendered question (with resolved params)
   answered: false,
-  progress: {}         // { courseId: { topicId: { score, streak, mastered } } }
+  progress: {},        // { courseId: { topicId: { score, streak, mastered, ...sm2 } } }
+  sessionStats: { correct: 0, total: 0, difficultySum: 0 }
 };
 
 const STORAGE_KEY    = 'practice_tool_v3_progress';
@@ -819,6 +820,7 @@ function scoreColor(score) {
 function openPractice(course, topic) {
   state.activeTopic = topic;
   state.answered = false;
+  state.sessionStats = { correct: 0, total: 0, difficultySum: 0 };
 
   document.getElementById('practice-topic-name').textContent = topic.name;
   updateScoreChip();
@@ -896,6 +898,12 @@ function shuffleChoices(choices) {
 }
 
 function loadNextQuestion() {
+  const course = state.activeCourse;
+  if (course.sm2 && course.sm2.enabled && state.sessionStats.total >= course.sm2.sessionSize) {
+    closePracticeSession();
+    return;
+  }
+
   const topic = state.activeTopic;
   state.answered = false;
 
@@ -1035,8 +1043,27 @@ function applyScore(correct, difficulty) {
 
   state.currentQ._delta = delta;
   state.currentQ._correct = correct;
+
+  state.sessionStats.total++;
+  if (correct) {
+    state.sessionStats.correct++;
+    state.sessionStats.difficultySum += difficulty;
+  }
+
   saveProgress();
   updateScoreChip();
+}
+
+function closePracticeSession() {
+  const course = state.activeCourse;
+  const ts = getTopicState(course.id, state.activeTopic.id, course);
+  if (course.sm2 && course.sm2.enabled) {
+    const quality = getSessionQuality(state.sessionStats);
+    updateSM2(ts, quality, course.sm2.minEaseFactor || 1.3);
+  }
+  saveProgress();
+  renderTopicList(course);
+  showScreen('screen-course');
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1155,10 +1182,7 @@ document.getElementById('btn-back-home').addEventListener('click', () => {
   showScreen('screen-home');
 });
 
-document.getElementById('btn-back-course').addEventListener('click', () => {
-  renderTopicList(state.activeCourse);
-  showScreen('screen-course');
-});
+document.getElementById('btn-back-course').addEventListener('click', closePracticeSession);
 
 document.getElementById('btn-submit-num').addEventListener('click', handleNumericalAnswer);
 document.getElementById('num-input').addEventListener('keydown', e => {
