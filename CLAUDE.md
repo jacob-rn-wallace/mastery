@@ -10,12 +10,16 @@ Mastery is a two-file, self-contained browser-based practice tool. There is no b
 
 **File inventory:**
 - `index.html` — the entire application: HTML structure, CSS, and JavaScript in one file
-- `questions.js` — a stub notice file; the problem bank now lives in the marked PROBLEM BANK `<script>` block inside `index.html`
+- `user/questions.js` — the user's personal problem bank (`COURSES` array); loaded by `index.html` via `<script src="user/questions.js">`. **Git-ignored — never commit this file or anything else inside `user/`.**
+- `questions.js` — a stub notice file redirecting editors to `user/questions.js`
+- `.gitignore` — excludes `user/` and common system files
 - `README.md` — user-facing documentation
 - `CLAUDE.md` — this file
 - `LICENSE` — MIT
 
-There are no other files. There is no `package.json`, no `node_modules`, no `dist/`, no transpilation.
+The `user/` folder is git-ignored. Never commit anything from it, even temporarily. Do not add it to version control under any circumstances.
+
+There is no `package.json`, no `node_modules`, no `dist/`, no transpilation.
 
 ---
 
@@ -23,7 +27,7 @@ There are no other files. There is no `package.json`, no `node_modules`, no `dis
 
 ### Data flow
 
-1. `COURSES` is defined inline in `index.html` in the marked PROBLEM BANK `<script>` block near the top of the file.
+1. `index.html` loads `user/questions.js` via `<script src="user/questions.js">`, making `COURSES` available as a global variable.
 2. On page load, `loadProgress()` reads `localStorage` under the key `practice_tool_v2_progress` and populates `state.progress`.
 3. The user navigates: Home → Course → Topic → Practice.
 4. Each question is drawn by `pickQuestion(topic)` (currently uniform random), then `resolveParams(problem)` substitutes `{{PARAM}}` placeholders and evaluates `answerFn` to compute the correct answer.
@@ -156,6 +160,22 @@ The mastery overlay (`#mastery-overlay`) is a fixed-position element layered abo
 ---
 
 ## Common tasks
+
+### Validate user/questions.js for syntax errors
+```bash
+node --check user/questions.js
+```
+
+### Count problems per course
+```bash
+node -e "
+const { COURSES } = require('./user/questions.js');
+COURSES.forEach(c => {
+  const n = c.topics.reduce((a, t) => a + t.problems.length, 0);
+  console.log(c.name + ': ' + c.topics.length + ' topics, ' + n + ' problems');
+});
+"
+```
 
 ### Serve locally (avoids any browser file:// quirks)
 ```bash
