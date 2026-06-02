@@ -6,7 +6,7 @@ This file is for AI assistants (Claude Code and others) working on this reposito
 
 ## What this project is
 
-Mastery is a two-file, self-contained browser-based practice tool. There is no build step, no package manager, no framework, and no server-side code. It runs by opening `index.html` directly in a browser.
+Mastery is a browser-based practice tool with no build step, no package manager, no framework, and no server-side code. The app is `index.html`; the user's problem bank is `user/questions.js`. Supporting files (`questions.js` stub, `.gitignore`, `README.md`, `CLAUDE.md`, `LICENSE`) round out the repository.
 
 **File inventory:**
 - `index.html` — the entire application: HTML structure, CSS, and JavaScript in one file
@@ -157,7 +157,7 @@ The mastery overlay (`#mastery-overlay`) is a fixed-position element layered abo
 
 **No frameworks, no transpilation.** Keep it that way. The entire value proposition of this tool is that it runs by opening a file. Do not introduce a build step, npm dependencies, or module bundlers. ES6+ syntax is fine; anything requiring transpilation is not.
 
-**`questions.js` must remain valid in both browser and Node contexts.** The `if (typeof module !== "undefined") module.exports = { COURSES }` line at the bottom is what enables Node-based tooling (e.g., a validator script, tests). Don't remove it.
+**`user/questions.js` must remain valid in both browser and Node contexts.** The `if (typeof module !== "undefined") module.exports = { COURSES }` line at the bottom is what enables Node-based tooling (e.g., a validator script, tests). Don't remove it.
 
 ---
 

@@ -59,7 +59,7 @@ Fork this repository and enable GitHub Pages on the `main` branch. The tool is i
 
 ## Adding problems
 
-Open `index.html` and find the **PROBLEM BANK** section (marked with delimiter comments near the top of the file). Find the course and topic you want to add to, and append an object to the `problems` array.
+Open `user/questions.js`. Find the course and topic you want to add to, and append an object to the `problems` array.
 
 ### Multiple choice problem
 
@@ -132,7 +132,7 @@ source: "Lecture 4 — Fluid Statics"
 
 ## Adding a course
 
-Append a new object to the `COURSES` array in the **PROBLEM BANK** section of `index.html`:
+Append a new object to the `COURSES` array in `user/questions.js`:
 
 ```js
 {
