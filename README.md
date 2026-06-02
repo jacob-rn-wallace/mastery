@@ -26,21 +26,21 @@ Numerical problems can be **parametric**: define named parameter ranges in the c
 
 ## Usage
 
-Mastery is two files: `index.html` and `questions.js`. They must be in the same folder.
+Mastery is a single file: `index.html`.
 
 **Option 1 — open locally:**
-Download both files, keep them together, and open `index.html` in any modern browser.
+Download `index.html` and open it in any modern browser.
 
 **Option 2 — GitHub Pages:**
 Fork this repository and enable GitHub Pages on the `main` branch. The tool is immediately available at your Pages URL with no configuration.
 
-> **Note on local file loading:** Most browsers handle the two-file setup fine when opened from disk. If you run into issues (particularly in Chrome with strict local file policies), use a simple local server: `python3 -m http.server` in the project folder, then open `http://localhost:8000`.
+> **Note on local file loading:** Most browsers open `index.html` from disk without issues. If you run into problems (particularly in Chrome with strict local file policies), use a simple local server: `python3 -m http.server` in the folder containing the file, then open `http://localhost:8000`.
 
 ---
 
 ## Adding problems
 
-Open `questions.js`. Find the course and topic you want to add to, and append an object to the `problems` array.
+Open `index.html` and find the **PROBLEM BANK** section (marked with delimiter comments near the top of the file). Find the course and topic you want to add to, and append an object to the `problems` array.
 
 ### Multiple choice problem
 
@@ -105,7 +105,7 @@ Difficulty affects scoring in continuous mode: correct answers give `+10 × diff
 
 ## Adding a course
 
-Append a new object to the `COURSES` array in `questions.js`:
+Append a new object to the `COURSES` array in the **PROBLEM BANK** section of `index.html`:
 
 ```js
 {
