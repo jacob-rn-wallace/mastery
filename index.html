@@ -1128,6 +1128,8 @@ function applyScore(correct, difficulty) {
   const topic = state.activeTopic;
   const ts = getTopicState(course.id, topic.id, course);
 
+  const wasMastered = course.scoringMode === 'continuous' ? ts.score >= 80 : ts.mastered;
+
   let delta = 0;
   if (course.scoringMode === 'continuous') {
     if (correct) {
@@ -1137,7 +1139,6 @@ function applyScore(correct, difficulty) {
       delta = -(5 * difficulty);
       ts.score = Math.max(0, ts.score + delta);
     }
-    if (ts.score >= 80) ts.mastered = true;
   } else {
     if (correct) {
       ts.streak++;
@@ -1149,6 +1150,9 @@ function applyScore(correct, difficulty) {
     }
     delta = correct ? 1 : -1;
   }
+
+  const nowMastered = course.scoringMode === 'continuous' ? ts.score >= 80 : ts.mastered;
+  if (!wasMastered && nowMastered) state.currentQ._justMastered = true;
 
   state.currentQ._delta = delta;
   state.currentQ._correct = correct;
@@ -1257,16 +1261,8 @@ function showFeedback(correct, resolved, correctAnswer) {
   document.getElementById('btn-next').classList.remove('hidden');
 
   // Check for mastery celebration
-  const topic = state.activeTopic;
-  const ts = getTopicState(course.id, topic.id, course);
-  if (ts.mastered && state.currentQ._justMastered !== true) {
-    if (
-      (course.scoringMode === 'streak' && correct && ts.streak === course.masteryThreshold) ||
-      (course.scoringMode === 'continuous' && correct && ts.score >= 80 && ts.score - delta < 80)
-    ) {
-      state.currentQ._justMastered = true;
-      setTimeout(() => showMasteryOverlay(topic.name), 400);
-    }
+  if (state.currentQ._justMastered) {
+    setTimeout(() => showMasteryOverlay(state.activeTopic.name), 400);
   }
 }
 
