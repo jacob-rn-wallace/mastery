@@ -6,6 +6,18 @@ A self-contained, browser-based practice tool for building subject mastery throu
 
 ---
 
+## Project structure
+
+```
+├── index.html          # the app — HTML, CSS, and JavaScript in one file
+└── user/
+    └── questions.js    # your personal problem bank — add your courses here
+```
+
+The root of the repository is tracked by git — pulling updates only ever changes app files. The `user/` folder is excluded from git entirely, so your problem bank is never overwritten by a pull or accidentally committed.
+
+---
+
 ## What it does
 
 You select a course, pick a topic, and answer problems one at a time. After each answer you get immediate feedback and an explanation. Your progress is tracked per topic and persists across sessions via `localStorage`.
@@ -26,15 +38,21 @@ Numerical problems can be **parametric**: define named parameter ranges in the c
 
 ## Usage
 
-Mastery is a single file: `index.html`.
+Mastery runs from `index.html`, which loads your problem bank from `user/questions.js`. Both files must be served together.
 
 **Option 1 — open locally:**
-Download `index.html` and open it in any modern browser.
+Clone this repository, then run a local server in the project folder:
+
+```bash
+python3 -m http.server
+```
+
+Open `http://localhost:8000` in your browser. After cloning, edit `user/questions.js` to add your own courses.
 
 **Option 2 — GitHub Pages:**
 Fork this repository and enable GitHub Pages on the `main` branch. The tool is immediately available at your Pages URL with no configuration.
 
-> **Note on local file loading:** Most browsers open `index.html` from disk without issues. If you run into problems (particularly in Chrome with strict local file policies), use a simple local server: `python3 -m http.server` in the folder containing the file, then open `http://localhost:8000`.
+> **Note on local file loading:** Because `index.html` loads `user/questions.js` as an external script, opening `index.html` directly via `file://` will be blocked by Chrome's local file policy. Use `python3 -m http.server` (Option 1) or GitHub Pages (Option 2) instead.
 
 ---
 
