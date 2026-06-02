@@ -162,6 +162,13 @@
     color: var(--muted);
     margin-top: 5px;
   }
+  .course-review-label {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    margin-top: 4px;
+  }
+  .course-review-label.due { color: var(--accent); }
+  .course-review-label.caught-up { color: var(--muted); }
 
   /* ── RESET BUTTON ── */
   .btn {
@@ -263,6 +270,15 @@
     color: var(--correct);
     flex-shrink: 0;
   }
+  .review-badge {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    padding: 2px 7px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .review-badge.due     { border: 1px solid var(--accent); color: var(--accent); }
+  .review-badge.overdue { border: 1px solid var(--wrong);  color: var(--wrong);  }
   .topic-row.locked { opacity: 0.45; cursor: default; }
   .topic-row.locked:hover { background: var(--surface); }
   .topic-row.sm2-locked { opacity: 0.6; cursor: default; }
@@ -676,6 +692,14 @@ function isTopicDue(course, topicState) {
   return today >= topicState.nextReviewDate;
 }
 
+function getTopicReviewStatus(course, topic, topicState) {
+  if (!course.sm2 || !course.sm2.enabled || !topicState.nextReviewDate) return 'unscheduled';
+  const today = new Date().toISOString().slice(0, 10);
+  if (topicState.nextReviewDate === today) return 'due';
+  if (topicState.nextReviewDate < today) return 'overdue';
+  return 'upcoming';
+}
+
 // ═══════════════════════════════════════════════════════════
 //  NAVIGATION
 // ═══════════════════════════════════════════════════════════
@@ -712,6 +736,17 @@ function renderHome() {
     avgScore = totalTopics ? Math.round(avgScore / totalTopics) : 0;
     const progressFraction = totalTopics ? masteredCount / totalTopics : 0;
 
+    let dueCount = 0;
+    if (course.sm2 && course.sm2.enabled) {
+      topics.forEach(t => {
+        if (isTopicUnlocked(course, t)) {
+          const ts = getTopicState(course.id, t.id, course);
+          const status = getTopicReviewStatus(course, t, ts);
+          if (status === 'due' || status === 'overdue') dueCount++;
+        }
+      });
+    }
+
     const card = document.createElement('div');
     card.className = 'course-card';
     card.style.setProperty('--card-color', course.color);
@@ -724,6 +759,12 @@ function renderHome() {
       ? `${masteredCount}/${totalTopics} topics mastered`
       : `${masteredCount}/${totalTopics} topics ≥80`;
 
+    const reviewLine = course.sm2 && course.sm2.enabled
+      ? dueCount > 0
+        ? `<div class="course-review-label due">${dueCount} topic${dueCount !== 1 ? 's' : ''} due for review</div>`
+        : `<div class="course-review-label caught-up">all caught up</div>`
+      : '';
+
     card.innerHTML = `
       <div class="course-card-name">${course.name}</div>
       <div class="course-card-meta">
@@ -734,6 +775,7 @@ function renderHome() {
         <div class="course-progress-fill" style="width:${progressFraction*100}%; background:${course.color}"></div>
       </div>
       <div class="course-progress-label">${progressLabel}</div>
+      ${reviewLine}
     `;
 
     card.addEventListener('click', () => openCourse(course));
@@ -790,9 +832,16 @@ function renderTopicList(course) {
     } else {
       // Accessible — render normally
       row.className = 'topic-row';
+      const status = getTopicReviewStatus(course, topic, ts);
+      const reviewBadge = status === 'due'
+        ? '<span class="review-badge due">due today</span>'
+        : status === 'overdue'
+        ? '<span class="review-badge overdue">overdue</span>'
+        : '';
       if (course.scoringMode === 'continuous') {
         const pct = ts.score;
         rightSide = `
+          ${reviewBadge}
           <span class="topic-score-display" style="color:${scoreColor(pct)}">${pct}</span>
           <div class="topic-bar">
             <div class="topic-bar-fill" style="width:${pct}%; background:${course.color}"></div>
@@ -801,9 +850,10 @@ function renderTopicList(course) {
         `;
       } else {
         if (ts.mastered) {
-          rightSide = '<span class="mastered-badge">mastered</span>';
+          rightSide = `${reviewBadge}<span class="mastered-badge">mastered</span>`;
         } else {
           rightSide = `
+            ${reviewBadge}
             <span class="topic-score-display muted mono" style="font-size:0.7rem">${ts.streak}/${course.masteryThreshold} streak</span>
             <div class="topic-bar">
               <div class="topic-bar-fill" style="width:${(ts.streak/course.masteryThreshold)*100}%; background:${course.color}"></div>
