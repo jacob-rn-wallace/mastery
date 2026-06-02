@@ -631,7 +631,7 @@ function renderHome() {
 
     topics.forEach(t => {
       const ts = getTopicState(course.id, t.id, course);
-      if (course.scoringMode === 'mastery') {
+      if (course.scoringMode === 'streak') {
         if (ts.mastered) masteredCount++;
       } else {
         avgScore += ts.score;
@@ -646,11 +646,11 @@ function renderHome() {
     card.className = 'course-card';
     card.style.setProperty('--card-color', course.color);
 
-    const modeLabel = course.scoringMode === 'mastery'
+    const modeLabel = course.scoringMode === 'streak'
       ? `mastery mode · ${course.masteryThreshold} in a row`
       : 'continuous scoring';
 
-    const progressLabel = course.scoringMode === 'mastery'
+    const progressLabel = course.scoringMode === 'streak'
       ? `${masteredCount}/${totalTopics} topics mastered`
       : `${masteredCount}/${totalTopics} topics ≥80`;
 
@@ -680,7 +680,7 @@ function openCourse(course) {
 
   document.getElementById('course-title').textContent = course.name;
   document.getElementById('course-mode-label').textContent =
-    course.scoringMode === 'mastery'
+    course.scoringMode === 'streak'
       ? `mastery mode — ${course.masteryThreshold} correct in a row to master each topic`
       : 'continuous scoring — performance on each question updates your topic score (0–100)';
 
@@ -999,7 +999,7 @@ function showFeedback(correct, resolved, correctAnswer) {
   const ts = getTopicState(course.id, topic.id, course);
   if (ts.mastered && state.currentQ._justMastered !== true) {
     if (
-      (course.scoringMode === 'mastery' && correct && ts.streak === course.masteryThreshold) ||
+      (course.scoringMode === 'streak' && correct && ts.streak === course.masteryThreshold) ||
       (course.scoringMode === 'continuous' && correct && ts.score >= 80 && ts.score - delta < 80)
     ) {
       state.currentQ._justMastered = true;
