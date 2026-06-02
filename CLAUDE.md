@@ -29,7 +29,7 @@ There is no `package.json`, no `node_modules`, no `dist/`, no transpilation.
 ### Data flow
 
 1. `index.html` loads `user/questions.js` via `<script src="user/questions.js">`, making `COURSES` available as a global variable.
-2. On page load, `loadProgress()` reads `localStorage` under the key `practice_tool_v2_progress` and populates `state.progress`.
+2. On page load, `loadProgress()` reads `localStorage` under the key `practice_tool_v3_progress` and populates `state.progress`.
 3. The user navigates: Home → Course → Topic → Practice.
 4. Each question is drawn by `pickQuestion(topic)` (currently uniform random), then `resolveParams(problem)` substitutes `{{PARAM}}` placeholders and evaluates `answerFn` to compute the correct answer.
 5. After the user answers, `applyScore()` updates `state.progress` and calls `saveProgress()` to write back to `localStorage`.
@@ -103,7 +103,7 @@ Implements the standard SM-2 algorithm. `quality` (0–5 integer from `getSessio
 - `repetitions === 0`: `interval = 1`
 - `repetitions === 1`: `interval = 6`
 - `repetitions >= 2`: `interval = round(interval * easeFactor)`
-- `easeFactor += 0.1 - (5 - quality) * 0.08` (clamped to `minEaseFactor`)
+- `easeFactor += 0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02)` (clamped to `minEaseFactor`)
 
 **Date handling:** All dates are stored and compared as `YYYY-MM-DD` ISO strings. Lexicographic string comparison is valid for this format. Date objects for display are always constructed as `new Date(y, m-1, d)` (parsed from the stored string) to avoid UTC offset bugs — `new Date('YYYY-MM-DD')` parses as UTC midnight and can display the wrong local date in negative-offset timezones.
 
