@@ -1,5 +1,8 @@
-# User-specific content — not tracked by git
-user/
+# user/questions.js is tracked as a template but personal edits are hidden from git.
+# After cloning, run: git update-index --skip-worktree user/questions.js
+# Any other files added to user/ (backups, exports, etc.) are not tracked.
+user/*
+!user/questions.js
 
 # Common system files
 .DS_Store

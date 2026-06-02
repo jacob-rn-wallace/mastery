@@ -10,14 +10,14 @@ Mastery is a two-file, self-contained browser-based practice tool. There is no b
 
 **File inventory:**
 - `index.html` — the entire application: HTML structure, CSS, and JavaScript in one file
-- `user/questions.js` — the user's personal problem bank (`COURSES` array); loaded by `index.html` via `<script src="user/questions.js">`. **Git-ignored — never commit this file or anything else inside `user/`.**
+- `user/questions.js` — the user's personal problem bank (`COURSES` array); loaded by `index.html` via `<script src="user/questions.js">`. Tracked in git as a clean template; users run `git update-index --skip-worktree user/questions.js` once after cloning so their edits are never flagged as uncommitted changes.
 - `questions.js` — a stub notice file redirecting editors to `user/questions.js`
-- `.gitignore` — excludes `user/` and common system files
+- `.gitignore` — excludes everything in `user/` except `user/questions.js`, plus common system files
 - `README.md` — user-facing documentation
 - `CLAUDE.md` — this file
 - `LICENSE` — MIT
 
-The `user/` folder is git-ignored. Never commit anything from it, even temporarily. Do not add it to version control under any circumstances.
+`user/questions.js` is tracked in git as a template but personal edits are hidden via `--skip-worktree`. Never commit a user's customized copy of it. Any other files created inside `user/` (backups, exports, etc.) are fully git-ignored.
 
 There is no `package.json`, no `node_modules`, no `dist/`, no transpilation.
 

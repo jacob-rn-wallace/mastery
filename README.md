@@ -41,13 +41,14 @@ Numerical problems can be **parametric**: define named parameter ranges in the c
 Mastery runs from `index.html`, which loads your problem bank from `user/questions.js`. Both files must be served together.
 
 **Option 1 — open locally:**
-Clone this repository, then run a local server in the project folder:
+Clone this repository, then run these two commands once from the project folder:
 
 ```bash
+git update-index --skip-worktree user/questions.js
 python3 -m http.server
 ```
 
-Open `http://localhost:8000` in your browser. After cloning, edit `user/questions.js` to add your own courses.
+The first command tells git to ignore your local edits to `user/questions.js`, so your problem bank never shows up as uncommitted changes when you pull updates. Open `http://localhost:8000` in your browser, then edit `user/questions.js` to add your own courses.
 
 **Option 2 — GitHub Pages:**
 Fork this repository and enable GitHub Pages on the `main` branch. The tool is immediately available at your Pages URL with no configuration.
