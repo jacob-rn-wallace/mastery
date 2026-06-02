@@ -263,6 +263,14 @@
     color: var(--correct);
     flex-shrink: 0;
   }
+  .topic-row.locked { opacity: 0.45; cursor: default; }
+  .topic-row.locked:hover { background: var(--surface); }
+  .topic-locked-label {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
 
   /* ── PRACTICE SCREEN ── */
   .practice-inner {
@@ -713,29 +721,44 @@ function renderTopicList(course) {
   course.topics.forEach(topic => {
     const ts = getTopicState(course.id, topic.id, course);
     const row = document.createElement('div');
-    row.className = 'topic-row';
+    const unlocked = isTopicUnlocked(course, topic);
 
     let rightSide = '';
-    if (course.scoringMode === 'continuous') {
-      const pct = ts.score;
-      rightSide = `
-        <span class="topic-score-display" style="color:${scoreColor(pct)}">${pct}</span>
-        <div class="topic-bar">
-          <div class="topic-bar-fill" style="width:${pct}%; background:${course.color}"></div>
-        </div>
-        ${ts.score >= 80 ? '<span class="mastered-badge">mastered</span>' : ''}
-      `;
+    if (!unlocked) {
+      row.className = 'topic-row locked';
+      const courseProgress = state.progress[course.id] || {};
+      const unmetNames = (topic.prerequisites || [])
+        .filter(prereqId => {
+          const pts = courseProgress[prereqId];
+          if (!pts) return true;
+          return course.scoringMode === 'continuous' ? pts.score < 60 : !pts.mastered;
+        })
+        .map(prereqId => course.topics.find(t => t.id === prereqId)?.name || prereqId);
+      rightSide = `<span class="topic-locked-label">🔒 requires: ${unmetNames.join(', ')}</span>`;
     } else {
-      if (ts.mastered) {
-        rightSide = '<span class="mastered-badge">mastered</span>';
-      } else {
+      row.className = 'topic-row';
+      if (course.scoringMode === 'continuous') {
+        const pct = ts.score;
         rightSide = `
-          <span class="topic-score-display muted mono" style="font-size:0.7rem">${ts.streak}/${course.masteryThreshold} streak</span>
+          <span class="topic-score-display" style="color:${scoreColor(pct)}">${pct}</span>
           <div class="topic-bar">
-            <div class="topic-bar-fill" style="width:${(ts.streak/course.masteryThreshold)*100}%; background:${course.color}"></div>
+            <div class="topic-bar-fill" style="width:${pct}%; background:${course.color}"></div>
           </div>
+          ${ts.score >= 80 ? '<span class="mastered-badge">mastered</span>' : ''}
         `;
+      } else {
+        if (ts.mastered) {
+          rightSide = '<span class="mastered-badge">mastered</span>';
+        } else {
+          rightSide = `
+            <span class="topic-score-display muted mono" style="font-size:0.7rem">${ts.streak}/${course.masteryThreshold} streak</span>
+            <div class="topic-bar">
+              <div class="topic-bar-fill" style="width:${(ts.streak/course.masteryThreshold)*100}%; background:${course.color}"></div>
+            </div>
+          `;
+        }
       }
+      row.addEventListener('click', () => openPractice(course, topic));
     }
 
     row.innerHTML = `
@@ -746,7 +769,6 @@ function renderTopicList(course) {
       ${rightSide}
     `;
 
-    row.addEventListener('click', () => openPractice(course, topic));
     list.appendChild(row);
   });
 }
