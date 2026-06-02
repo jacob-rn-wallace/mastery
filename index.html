@@ -645,7 +645,8 @@ function getTopicState(courseId, topicId, course) {
       score: 0,
       streak: 0,
       mastered: false,
-      ...SM2_DEFAULTS
+      ...SM2_DEFAULTS,
+      easeFactor: (course && course.sm2 && course.sm2.initialEaseFactor) || 2.5
     };
   }
   const ts = state.progress[courseId][topicId];

@@ -16,6 +16,16 @@
  *                      a row before it is marked mastered. Any wrong answer
  *                      resets the streak to 0.
  *     - masteryThreshold: (streak mode only) consecutive correct answers needed.
+ *     - sm2:          (optional) SM-2 spaced-repetition settings for this course.
+ *         enabled           — whether SM-2 scheduling is active for this course.
+ *                             When false (or omitted), the sm2 block is ignored and
+ *                             the course behaves exactly as before.
+ *         initialEaseFactor — starting ease factor for all topics (default 2.5,
+ *                             matches the SM-2 specification).
+ *         minEaseFactor     — floor for ease factor decay (default 1.3, matches
+ *                             the SM-2 specification).
+ *         sessionSize       — number of questions per session before SM-2 updates
+ *                             are applied and the session closes (e.g. 10).
  *     - topics:      array of topic objects (see below)
  *
  * HOW TO ADD A TOPIC:
@@ -65,6 +75,12 @@ const COURSES = [
     name: "Example Course — Continuous Scoring",
     color: "#2563eb",
     scoringMode: "continuous",
+    sm2: {
+      enabled: true,
+      initialEaseFactor: 2.5,
+      minEaseFactor: 1.3,
+      sessionSize: 10
+    },
     topics: [
       {
         id: "topic-mc",
@@ -167,6 +183,9 @@ const COURSES = [
     color: "#dc2626",
     scoringMode: "streak",
     masteryThreshold: 3,   // 3 correct in a row to master each topic
+    sm2: {
+      enabled: false
+    },
     topics: [
       {
         id: "topic-streak-demo",

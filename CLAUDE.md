@@ -74,6 +74,11 @@ The file exports `COURSES` (array). It also does `module.exports = { COURSES }` 
 | `color` | string | yes | Hex color used for progress bars and card accents. |
 | `scoringMode` | `"continuous"` \| `"streak"` | yes | Determines scoring behavior. |
 | `masteryThreshold` | number | streak mode only | Consecutive correct answers needed to master a topic. |
+| `sm2` | object | no | SM-2 spaced-repetition config. Omit or set `enabled: false` to disable entirely. |
+| `sm2.enabled` | boolean | no | Activates SM-2 scheduling for this course. Default: `false`. |
+| `sm2.initialEaseFactor` | number | no | Starting ease factor for new topics. Default: `2.5` (SM-2 spec). |
+| `sm2.minEaseFactor` | number | no | Floor for ease factor decay. Default: `1.3` (SM-2 spec). Passed to `updateSM2()`. |
+| `sm2.sessionSize` | number | no | Questions per session before SM-2 fields are updated and session closes. |
 | `topics` | Topic[] | yes | |
 
 ### Topic object

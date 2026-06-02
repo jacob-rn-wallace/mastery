@@ -182,6 +182,31 @@ Unlock thresholds by scoring mode:
 
 A topic with no progress entry is always treated as locked. Every course should have at least one topic with no prerequisites so there is always a free entry point.
 
+### Optional: sm2 block
+
+Add an `sm2` block to a course to enable SM-2 spaced-repetition scheduling:
+
+```js
+{
+  id: "phys101",
+  name: "PHYS 101 — Mechanics",
+  color: "#7c3aed",
+  scoringMode: "continuous",
+  sm2: {
+    enabled: true,
+    initialEaseFactor: 2.5,   // starting ease factor for new topics (SM-2 default)
+    minEaseFactor: 1.3,        // floor for ease factor decay (SM-2 default)
+    sessionSize: 10            // questions per session before SM-2 updates and session ends
+  },
+  topics: [ ... ]
+}
+```
+
+- **`enabled`** — set to `false` (or omit the `sm2` block entirely) to disable SM-2; the course behaves exactly as before.
+- **`initialEaseFactor`** — ease factor assigned to each topic when it is first seen. `2.5` matches the SM-2 specification default.
+- **`minEaseFactor`** — ease factor cannot decay below this value. `1.3` matches the SM-2 specification default.
+- **`sessionSize`** — once this many questions have been answered in a session, SM-2 fields are updated and the app returns to the topic list.
+
 ---
 
 ## Scoring reference
