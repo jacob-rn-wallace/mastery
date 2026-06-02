@@ -265,6 +265,8 @@
   }
   .topic-row.locked { opacity: 0.45; cursor: default; }
   .topic-row.locked:hover { background: var(--surface); }
+  .topic-row.sm2-locked { opacity: 0.6; cursor: default; }
+  .topic-row.sm2-locked:hover { background: var(--surface); }
   .topic-locked-label {
     font-family: var(--mono);
     font-size: 0.7rem;
@@ -667,6 +669,13 @@ function isTopicUnlocked(course, topic) {
   });
 }
 
+function isTopicDue(course, topicState) {
+  if (!course.sm2 || !course.sm2.enabled) return true;
+  if (!topicState.nextReviewDate) return true;
+  const today = new Date().toISOString().slice(0, 10);
+  return today >= topicState.nextReviewDate;
+}
+
 // ═══════════════════════════════════════════════════════════
 //  NAVIGATION
 // ═══════════════════════════════════════════════════════════
@@ -757,9 +766,11 @@ function renderTopicList(course) {
     const ts = getTopicState(course.id, topic.id, course);
     const row = document.createElement('div');
     const unlocked = isTopicUnlocked(course, topic);
+    const due = isTopicDue(course, ts);
 
     let rightSide = '';
     if (!unlocked) {
+      // Prerequisite-locked — highest visual priority
       row.className = 'topic-row locked';
       const courseProgress = state.progress[course.id] || {};
       const unmetNames = (topic.prerequisites || [])
@@ -770,7 +781,14 @@ function renderTopicList(course) {
         })
         .map(prereqId => course.topics.find(t => t.id === prereqId)?.name || prereqId);
       rightSide = `<span class="topic-locked-label">🔒 requires: ${unmetNames.join(', ')}</span>`;
+    } else if (!due) {
+      // SM-2 scheduled — not yet due for review
+      row.className = 'topic-row sm2-locked';
+      const [y, m, d] = ts.nextReviewDate.split('-').map(Number);
+      const formatted = new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      rightSide = `<span class="topic-locked-label">⏰ next review: ${formatted}</span>`;
     } else {
+      // Accessible — render normally
       row.className = 'topic-row';
       if (course.scoringMode === 'continuous') {
         const pct = ts.score;
