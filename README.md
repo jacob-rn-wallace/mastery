@@ -219,6 +219,22 @@ Add an `sm2` block to a course to enable SM-2 spaced-repetition scheduling:
 
 ---
 
+## Validating your problem bank
+
+Run the included validator from the project root:
+
+```bash
+node validate.js
+```
+
+The validator loads `user/questions.js` and checks for:
+- **Errors** — things that will break the tool or produce wrong answers: duplicate course or topic IDs, invalid `scoringMode`, missing `masteryThreshold` in streak mode, missing `sm2.sessionSize` when SM-2 is enabled, prerequisite references to non-existent topic IDs, invalid problem `type` or `difficulty`, missing `question`, MC problems with fewer than two choices, and numerical problems missing both `answer` and `answerFn`.
+- **Warnings** — valid but likely mistakes: no entry-point topic (every topic has prerequisites), topics with fewer than two problems, `tolerance` above 0.5 (±50%), more than six MC choices, and missing `explanation`.
+
+All issues are collected in a single pass and grouped by course and topic. The exit code is 1 if any errors are found and 0 otherwise, making the script usable in CI.
+
+---
+
 ## Scoring reference
 
 ### Continuous mode

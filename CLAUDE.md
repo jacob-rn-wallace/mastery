@@ -217,6 +217,11 @@ The mastery overlay (`#mastery-overlay`) is a fixed-position element layered abo
 
 ## Common tasks
 
+### Validate the problem bank
+```bash
+node validate.js
+```
+
 ### Validate the problem bank for syntax errors
 ```bash
 node --check user/questions.js          # personal copy
