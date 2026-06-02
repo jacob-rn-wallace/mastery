@@ -321,6 +321,13 @@
     background: var(--surface);
   }
 
+  #session-progress {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
   /* ── QUESTION CARD ── */
   .question-card {
     background: var(--surface);
@@ -561,7 +568,7 @@
       </div>
       <p class="practice-topic-name" id="practice-topic-name"></p>
 
-      <div style="height:14px"></div>
+      <div id="session-progress" style="display:none"></div>
 
       <!-- Question card -->
       <div class="question-card" id="question-card">
@@ -893,6 +900,7 @@ function openPractice(course, topic) {
 
   document.getElementById('practice-topic-name').textContent = topic.name;
   updateScoreChip();
+  updateSessionProgress();
 
   loadNextQuestion();
   showScreen('screen-practice');
@@ -911,6 +919,18 @@ function updateScoreChip() {
     chip.textContent = ts.mastered ? 'mastered ✓' : `streak: ${ts.streak}/${course.masteryThreshold}`;
     chip.style.color = ts.mastered ? 'var(--correct)' : 'var(--text)';
   }
+}
+
+function updateSessionProgress() {
+  const el = document.getElementById('session-progress');
+  const course = state.activeCourse;
+  if (!course.sm2 || !course.sm2.enabled) {
+    el.style.display = 'none';
+    return;
+  }
+  const sessionSize = course.sm2.sessionSize;
+  el.style.display = '';
+  el.textContent = `question ${state.sessionStats.total + 1} of ${sessionSize}`;
 }
 
 function pickQuestion(topic) {
@@ -1026,6 +1046,8 @@ function loadNextQuestion() {
   } else {
     renderNumerical();
   }
+
+  updateSessionProgress();
 }
 
 const LETTERS = ['A', 'B', 'C', 'D', 'E'];
