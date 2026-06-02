@@ -1,8 +1,8 @@
-# user/questions.js is tracked as a template but personal edits are hidden from git.
-# After cloning, run: git update-index --skip-worktree user/questions.js
-# Any other files added to user/ (backups, exports, etc.) are not tracked.
+# user/questions.js is each user's personal problem bank — git-ignored so local edits
+# never show up as uncommitted changes. user/questions.template.js is the tracked
+# starter template. Any other files added to user/ are also not tracked.
 user/*
-!user/questions.js
+!user/questions.template.js
 
 # Common system files
 .DS_Store

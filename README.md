@@ -9,12 +9,13 @@ A self-contained, browser-based practice tool for building subject mastery throu
 ## Project structure
 
 ```
-├── index.html          # the app — HTML, CSS, and JavaScript in one file
+├── index.html                     # the app — HTML, CSS, and JavaScript in one file
 └── user/
-    └── questions.js    # your personal problem bank — add your courses here
+    ├── questions.template.js      # starter template — tracked by git
+    └── questions.js               # your personal problem bank — git-ignored
 ```
 
-The root of the repository is tracked by git — pulling updates only ever changes app files. The `user/` folder is excluded from git entirely, so your problem bank is never overwritten by a pull or accidentally committed.
+The root of the repository is tracked by git — pulling updates only ever changes app files. Inside `user/`, the template file is tracked; your personal `user/questions.js` is git-ignored, so it is never overwritten by a pull or accidentally committed.
 
 ---
 
@@ -41,14 +42,21 @@ Numerical problems can be **parametric**: define named parameter ranges in the c
 Mastery runs from `index.html`, which loads your problem bank from `user/questions.js`. Both files must be served together.
 
 **Option 1 — open locally:**
-Clone this repository, then run these two commands once from the project folder:
+Clone this repository, copy the template to create your personal problem bank, then start a local server:
 
 ```bash
-git update-index --skip-worktree user/questions.js
+# macOS / Linux
+cp user/questions.template.js user/questions.js
+
+# Windows
+copy user\questions.template.js user\questions.js
+```
+
+```bash
 python3 -m http.server
 ```
 
-The first command tells git to ignore your local edits to `user/questions.js`, so your problem bank never shows up as uncommitted changes when you pull updates. Open `http://localhost:8000` in your browser, then edit `user/questions.js` to add your own courses.
+Open `http://localhost:8000` in your browser, then edit `user/questions.js` to add your own courses. Git will never track changes to `user/questions.js`, so your problem bank is safe across pulls.
 
 **Option 2 — GitHub Pages:**
 Fork this repository and enable GitHub Pages on the `main` branch. The tool is immediately available at your Pages URL with no configuration.

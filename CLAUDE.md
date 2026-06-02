@@ -10,14 +10,15 @@ Mastery is a browser-based practice tool with no build step, no package manager,
 
 **File inventory:**
 - `index.html` — the entire application: HTML structure, CSS, and JavaScript in one file
-- `user/questions.js` — the user's personal problem bank (`COURSES` array); loaded by `index.html` via `<script src="user/questions.js">`. Tracked in git as a clean template; users run `git update-index --skip-worktree user/questions.js` once after cloning so their edits are never flagged as uncommitted changes.
+- `user/questions.template.js` — the starter template for the problem bank; tracked by git. Users copy this to `user/questions.js` after cloning.
+- `user/questions.js` — the user's personal problem bank (`COURSES` array); loaded by `index.html` via `<script src="user/questions.js">`. Git-ignored — never commit this.
 - `questions.js` — a stub notice file redirecting editors to `user/questions.js`
-- `.gitignore` — excludes everything in `user/` except `user/questions.js`, plus common system files
+- `.gitignore` — excludes everything in `user/` except `user/questions.template.js`, plus common system files
 - `README.md` — user-facing documentation
 - `CLAUDE.md` — this file
 - `LICENSE` — MIT
 
-`user/questions.js` is tracked in git as a template but personal edits are hidden via `--skip-worktree`. Never commit a user's customized copy of it. Any other files created inside `user/` (backups, exports, etc.) are fully git-ignored.
+`user/questions.js` is git-ignored — never commit it. `user/questions.template.js` is the tracked starter template. Any other files created inside `user/` (backups, exports, etc.) are also git-ignored.
 
 There is no `package.json`, no `node_modules`, no `dist/`, no transpilation.
 
@@ -163,9 +164,10 @@ The mastery overlay (`#mastery-overlay`) is a fixed-position element layered abo
 
 ## Common tasks
 
-### Validate user/questions.js for syntax errors
+### Validate the problem bank for syntax errors
 ```bash
-node --check user/questions.js
+node --check user/questions.js          # personal copy
+node --check user/questions.template.js # starter template
 ```
 
 ### Count problems per course
