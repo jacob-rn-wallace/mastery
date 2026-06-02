@@ -613,6 +613,17 @@ function getTopicState(courseId, topicId, course) {
   return state.progress[courseId][topicId];
 }
 
+function isTopicUnlocked(course, topic) {
+  if (!topic.prerequisites || topic.prerequisites.length === 0) return true;
+  const courseProgress = state.progress[course.id] || {};
+  return topic.prerequisites.every(prereqId => {
+    const ts = courseProgress[prereqId];
+    if (!ts) return false;
+    if (course.scoringMode === 'continuous') return ts.score >= 60;
+    return ts.mastered === true;
+  });
+}
+
 // ═══════════════════════════════════════════════════════════
 //  NAVIGATION
 // ═══════════════════════════════════════════════════════════
