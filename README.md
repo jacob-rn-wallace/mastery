@@ -119,6 +119,14 @@ Open `index.html` and find the **PROBLEM BANK** section (marked with delimiter c
 
 Difficulty affects scoring in continuous mode: correct answers give `+10 × difficulty` points; wrong answers give `−5 × difficulty` points.
 
+### Optional: source field
+
+Any problem can include an optional `source` field. When present, it is displayed in the feedback panel after the answer is revealed — useful for pointing back to a lecture, textbook chapter, or section.
+
+```js
+source: "Lecture 4 — Fluid Statics"
+```
+
 ---
 
 ## Adding a course

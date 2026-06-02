@@ -433,6 +433,12 @@
   }
   .feedback-delta.pos { color: var(--correct); }
   .feedback-delta.neg { color: var(--wrong); }
+  .feedback-source {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 6px;
+  }
 
   .next-btn {
     width: 100%;
@@ -549,6 +555,7 @@
       <div class="feedback-panel" id="feedback-panel">
         <div class="feedback-result" id="feedback-result"></div>
         <div class="feedback-explanation" id="feedback-explanation"></div>
+        <div class="feedback-source" id="feedback-source"></div>
         <div class="feedback-delta" id="feedback-delta"></div>
       </div>
 
@@ -980,6 +987,15 @@ function showFeedback(correct, resolved, correctAnswer) {
     expText = `Correct answer: ${formatNumber(correctAnswer)}\n\n` + expText;
   }
   explanation.textContent = expText;
+
+  const sourceEl = document.getElementById('feedback-source');
+  if (resolved.source) {
+    sourceEl.textContent = '↗ source: ' + resolved.source;
+    sourceEl.style.display = '';
+  } else {
+    sourceEl.textContent = '';
+    sourceEl.style.display = 'none';
+  }
 
   const course = state.activeCourse;
   const delta = state.currentQ._delta;

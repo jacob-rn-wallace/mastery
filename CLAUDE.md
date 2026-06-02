@@ -96,6 +96,7 @@ The file exports `COURSES` (array). It also does `module.exports = { COURSES }` 
 | `tolerance` | number | no | Fractional tolerance for numerical grading. Default: `0.01` (±1%). |
 | `choices` | string[] | mc only | `choices[0]` is always correct. Shuffled before display. |
 | `explanation` | string | no | Shown after every answer. |
+| `source` | string | no | Displayed in the feedback panel after answering. Intended for lecture, chapter, or section references (e.g. `"Lecture 4 — Bernoulli"`). |
 
 ### Resolved question (internal, not in config)
 
