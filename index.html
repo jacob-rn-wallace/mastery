@@ -596,12 +596,40 @@ let state = {
   progress: {}         // { courseId: { topicId: { score, streak, mastered } } }
 };
 
-const STORAGE_KEY = 'practice_tool_v2_progress';
+const STORAGE_KEY    = 'practice_tool_v3_progress';
+const STORAGE_KEY_V2 = 'practice_tool_v2_progress';
+
+const SM2_DEFAULTS = {
+  easeFactor: 2.5,
+  interval: 1,
+  repetitions: 0,
+  nextReviewDate: null,
+  lastReviewDate: null
+};
 
 function loadProgress() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    state.progress = raw ? JSON.parse(raw) : {};
+    if (raw) {
+      state.progress = JSON.parse(raw);
+    } else {
+      const v2raw = localStorage.getItem(STORAGE_KEY_V2);
+      if (v2raw) {
+        const v2 = JSON.parse(v2raw);
+        for (const courseId of Object.keys(v2)) {
+          for (const topicId of Object.keys(v2[courseId])) {
+            const ts = v2[courseId][topicId];
+            for (const [field, def] of Object.entries(SM2_DEFAULTS)) {
+              if (!(field in ts)) ts[field] = def;
+            }
+          }
+        }
+        state.progress = v2;
+        saveProgress();
+      } else {
+        state.progress = {};
+      }
+    }
   } catch(e) { state.progress = {}; }
 }
 
@@ -615,10 +643,15 @@ function getTopicState(courseId, topicId, course) {
     state.progress[courseId][topicId] = {
       score: 0,
       streak: 0,
-      mastered: false
+      mastered: false,
+      ...SM2_DEFAULTS
     };
   }
-  return state.progress[courseId][topicId];
+  const ts = state.progress[courseId][topicId];
+  for (const [field, def] of Object.entries(SM2_DEFAULTS)) {
+    if (!(field in ts)) ts[field] = def;
+  }
+  return ts;
 }
 
 function isTopicUnlocked(course, topic) {
