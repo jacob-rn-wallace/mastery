@@ -13,6 +13,7 @@ Mastery is a browser-based practice tool with no build step, no package manager,
 - `user/questions.template.js` — the starter template for the problem bank; tracked by git. Users copy this to `user/questions.js` after cloning.
 - `user/questions.js` — the user's personal problem bank (`COURSES` array); loaded by `index.html` via `<script src="user/questions.js">`. Git-ignored — never commit this.
 - `server.js` — Companion shutdown listener — started by start.command, not used when serving manually.
+- `start.command` — macOS startup script — double-click in Finder to start the app and companion server.
 - `questions.js` — a stub notice file redirecting editors to `user/questions.js`
 - `.gitignore` — excludes everything in `user/` except `user/questions.template.js`, plus common system files
 - `README.md` — user-facing documentation

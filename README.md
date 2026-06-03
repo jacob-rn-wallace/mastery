@@ -19,6 +19,20 @@ The root of the repository is tracked by git — pulling updates only ever chang
 
 ---
 
+## Quick start (macOS)
+
+1. Clone the repo and copy the template:
+   ```bash
+   cp user/questions.template.js user/questions.js
+   ```
+2. Double-click **`start.command`** in Finder.
+
+That opens `http://localhost:8000` in your default browser and starts the companion shutdown server. When you're done, use the **Shutdown** button inside the app to stop both servers cleanly.
+
+> **Other platforms:** `start.command` is macOS-only. On Linux or Windows, start the server manually with `python3 -m http.server` from the project root and open `http://localhost:8000` in your browser. The shutdown button will not be available in that case, but everything else works identically.
+
+---
+
 ## What it does
 
 You select a course, pick a topic, and answer problems one at a time. After each answer you get immediate feedback and an explanation. Your progress is tracked per topic and persists across sessions via `localStorage`.
