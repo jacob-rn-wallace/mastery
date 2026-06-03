@@ -12,6 +12,7 @@ Mastery is a browser-based practice tool with no build step, no package manager,
 - `index.html` — the entire application: HTML structure, CSS, and JavaScript in one file
 - `user/questions.template.js` — the starter template for the problem bank; tracked by git. Users copy this to `user/questions.js` after cloning.
 - `user/questions.js` — the user's personal problem bank (`COURSES` array); loaded by `index.html` via `<script src="user/questions.js">`. Git-ignored — never commit this.
+- `server.js` — Companion shutdown listener — started by start.command, not used when serving manually.
 - `questions.js` — a stub notice file redirecting editors to `user/questions.js`
 - `.gitignore` — excludes everything in `user/` except `user/questions.template.js`, plus common system files
 - `README.md` — user-facing documentation
