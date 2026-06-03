@@ -532,6 +532,7 @@
   <header class="header">
     <div class="logo">practice<span>://</span>tool</div>
     <div class="header-right">
+      <button class="btn danger" id="btn-shutdown" style="display:none">shut down</button>
       <button class="btn" id="btn-reset-all">reset all progress</button>
     </div>
   </header>
@@ -1304,6 +1305,19 @@ document.getElementById('btn-mastery-continue').addEventListener('click', () => 
   loadNextQuestion();
 });
 
+document.getElementById('btn-shutdown').addEventListener('click', async () => {
+  const btn = document.getElementById('btn-shutdown');
+  btn.disabled = true;
+  btn.textContent = 'shutting down...';
+  try {
+    await Promise.race([
+      fetch('http://localhost:9999/shutdown', { method: 'POST' }),
+      new Promise(resolve => setTimeout(resolve, 500))
+    ]);
+  } catch (e) { /* ignore */ }
+  window.close();
+});
+
 document.getElementById('btn-reset-all').addEventListener('click', () => {
   if (confirm('Reset all progress for all courses? This cannot be undone.')) {
     state.progress = {};
@@ -1319,6 +1333,17 @@ document.getElementById('btn-reset-all').addEventListener('click', () => {
 
 loadProgress();
 renderHome();
+
+(async () => {
+  try {
+    const controller = new AbortController();
+    const tid = setTimeout(() => controller.abort(), 1000);
+    const res = await fetch('http://localhost:9999/ping', { signal: controller.signal });
+    clearTimeout(tid);
+    const data = await res.json();
+    if (data.ok) document.getElementById('btn-shutdown').style.display = '';
+  } catch (e) { /* server not running — leave button hidden */ }
+})();
 </script>
 </body>
 </html>
